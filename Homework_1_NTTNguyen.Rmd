@@ -1,0 +1,40 @@
+---
+title: "Homework 1"
+author: "Ngoc Thuy Tram (Tram) Nguyen"
+date: "2024-08-26"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+
+Before going to answer question 1, I will install the **faraway** package
+```{r}
+install.packages("faraway")
+library(faraway)
+head(fat)
+summary(fat)
+str(fat)
+```
+### Numerical Summary
+```{r}
+head(fat)
+summary(fat)
+str(fat)
+```
+
+The **fat** dataset has a total of 18 numerical variables, in which either **brozek** or **siri** variable is the *response* variable, and the other remaining 16 variables are *predictor* variable in linear regression.
+Among 16 *predictor* variables, I think **age, weight, height, adipos, abdom** are most likely to have a relationship with body fat percentage, so I will just analyze/give comments on these variables, along with **brozek** and **siri**.
+
+### Graphical Summary
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+### Comments
