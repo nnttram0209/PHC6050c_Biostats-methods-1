@@ -2,7 +2,7 @@
 title: "Homework 1"
 author: "Ngoc Thuy Tram (Tram) Nguyen"
 date: "2024-08-26"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -11,30 +11,119 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Question 1
 
-Before going to answer question 1, I will install the **faraway** package
+Firstly, I will load the **faraway** package.
 ```{r}
-install.packages("faraway")
 library(faraway)
-head(fat)
-summary(fat)
+```
+
+
+Next, I will produce an overview about the **fat** dataset
+```{r}
 str(fat)
 ```
+
+The **fat** dataset has a total of 18 numerical variables across 252 observations, in which either **brozek** or **siri** variable is the *response* variable, and the other remaining 16 variables are *predictor* variable in linear regression.
+Among 16 *predictor* variables, I think **weight, height, adipos, abdom** are most likely to have a relationship with body fat percentage, so I will just analyze/give comments on these variables, along with either **brozek** or **siri**. Here, I will choose **brozek**. To be easier, I will save **brozek, weight, height, adipos, abdom** as a new data frame named **new_fat**
+```{r}
+new_fat <- subset(fat, select = c(brozek, weight, height, adipos, abdom))
+```
+
 ### Numerical Summary
 ```{r}
-head(fat)
-summary(fat)
-str(fat)
+summary(new_fat)
 ```
 
-The **fat** dataset has a total of 18 numerical variables, in which either **brozek** or **siri** variable is the *response* variable, and the other remaining 16 variables are *predictor* variable in linear regression.
-Among 16 *predictor* variables, I think **age, weight, height, adipos, abdom** are most likely to have a relationship with body fat percentage, so I will just analyze/give comments on these variables, along with **brozek** and **siri**.
-
 ### Graphical Summary
+Histogram of each variable with density curve
+```{r}
+par(mfrow=c(2, 3), mar=c(4,4,4,4))
+hist(new_fat$weight, prob = TRUE)
+lines(density(new_fat$weight), col = 4, lwd = 2)
+hist(new_fat$height, prob = TRUE, ylim = c(0, max(density(new_fat$height)$y)))
+lines(density(new_fat$height), col = 4, lwd = 2)
+hist(new_fat$adipos, prob = TRUE, ylim = c(0, max(density(new_fat$adipos)$y)))
+lines(density(new_fat$adipos), col = 4, lwd = 2)
+hist(new_fat$abdom, prob = TRUE, ylim = c(0, max(density(new_fat$abdom)$y)))
+lines(density(new_fat$abdom), col = 4, lwd = 2)
+hist(new_fat$brozek, prob = TRUE, ylim = c(0, max(density(new_fat$brozek)$y)))
+lines(density(new_fat$brozek), col = 4, lwd = 2)
+```
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+Scatter-plot between each predictor (**weight, height, adipos, abdom**) and the response variable (**brozek**) 
+```{r}
+par(mfrow=c(2, 2))
+plot(new_fat$weight, new_fat$brozek)
+plot(new_fat$height, new_fat$brozek)
+plot(new_fat$adipos, new_fat$brozek)
+plot(new_fat$abdom, new_fat$brozek)
 ```
 
 ### Comments
+* There are no missing values in **new_fat**. However, **brozek** has "0" value, which is invalid value for human body fat percentage and thus, double check is needed for observations with "0" value for **brozek** variable to ensure data accuracy. In case correct values for such observations can't be identified, it may be considered to remove such observations out of the dataset.
+* All five variables have outliers that should be checked to see if they are reasonable.
+* Without outliers, all five variables seem to have a normal distribution.
+* Scatter plots suggest that each of the variables **weight, height, adipos** has a positive correlation with **brozek**, so they may be alternative methods to predict body fat percentage. However, further model selection/validation is needed to see if **weight, height, adipos** altogether, or just a subset of them, can be used to predict **brozek**.
+* No relationship was found between **height** and **brozek**.
+
+## Question 2
+
+Firstly, I will load the **faraway** package.
+```{r}
+library(faraway)
+```
+
+Next, I will produce an overview about the **gala** dataset
+```{r}
+str(gala)
+```
+
+### Numerical Summary
+In this Question 2, I will try calculating numerical summary using `dplyr` and `tidyr` packages for 3 variables **Species, Endemics, Area, Elevation**. To be easier, I will generate a new data frame named **new_gala** that includes these 4 variables only.
+```{r}
+library(faraway)
+library(dplyr)
+library(tidyr)
+
+new_gala <- subset(gala, select = c(Species, Endemics, Area, Elevation))
+new_gala %>% summarise(across(where(is.numeric), .fns = 
+                     list(Min = min,
+                          Median = median,
+                          Q25 = ~quantile(., 0.25),
+                          IQR = IQR,
+                          Q75 = ~quantile(., 0.75),
+                          Mean = mean,
+                          SD = sd,
+                          Max = max))) %>%
+  pivot_longer(everything(), names_sep='_', names_to=c('Variable', '.value'))
+```
+
+### Graphical Summary
+Histogram of each variable
+```{r}
+par(mfrow=c(2, 2), mar=c(4,4,4,4))
+hist(new_gala$Species, breaks=30)
+hist(new_gala$Endemics, breaks=30)
+hist(new_gala$Area, breaks=30)
+hist(new_gala$Elevation, breaks=30)
+```
+
+Box-plot of each variable
+```{r}
+par(mfrow=c(2, 2), mar=c(4,4,4,4))
+boxplot(new_gala$Species, main="Species")
+boxplot(new_gala$Endemics, main="Endemics")
+boxplot(new_gala$Area, main="Area")
+boxplot(new_gala$Elevation, main="Elevation")
+```
+
+Scatter-plot between each predictor (**Area, Endemics, Elevation**) and the response variable (**Species**) 
+```{r}
+par(mfrow=c(2, 2))
+plot(new_gala$Area, new_gala$Species)
+plot(new_gala$Endemics, new_gala$Species)
+plot(new_gala$Elevation, new_gala$Species)
+```
+
+### Comments
+* Histogram and box-plot charts show that distribution of 3 variables **Species, Endemics, Area, Elevation** are skewed, with some high outliers. This suggests that some transformation to another scale (e.g. log scale) may be considered.
+* Scatter plot suggest that number of **Species** tend to increase as **Elevation** and **Endemics** get higher. Same pattern is observed between  **Species** and **Area**; however, this pattern is not as clear as the two pairs above.
