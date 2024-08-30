@@ -2,7 +2,7 @@
 title: "Homework 1"
 author: "Ngoc Thuy Tram (Tram) Nguyen"
 date: "2024-08-26"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -62,8 +62,9 @@ plot(new_fat$abdom, new_fat$brozek)
 * There are no missing values in **new_fat**. However, **brozek** has "0" value, which is invalid value for human body fat percentage and thus, double check is needed for observations with "0" value for **brozek** variable to ensure data accuracy. In case correct values for such observations can't be identified, it may be considered to remove such observations out of the dataset.
 * All five variables have outliers that should be checked to see if they are reasonable.
 * Without outliers, all five variables seem to have a normal distribution.
-* Scatter plots suggest that each of the variables **weight, height, adipos** has a positive correlation with **brozek**, so they may be alternative methods to predict body fat percentage. However, further model selection/validation is needed to see if **weight, height, adipos** altogether, or just a subset of them, can be used to predict **brozek**.
-* No relationship was found between **height** and **brozek**.
+* Scatter plots suggest that each of the variables **weight, adipos, abdom** has a positive correlation with **brozek**, so they may be alternative methods to predict body fat percentage. However, further model selection/validation is needed to see if **weight, adipos, abdom** altogether, or just a subset of them, can be used to predict **brozek**.
+* No relationship is found between **height** and **brozek**.
+
 
 ## Question 2
 
@@ -78,9 +79,8 @@ str(gala)
 ```
 
 ### Numerical Summary
-In this Question 2, I will try calculating numerical summary using `dplyr` and `tidyr` packages for 3 variables **Species, Endemics, Area, Elevation**. To be easier, I will generate a new data frame named **new_gala** that includes these 4 variables only.
+In this Question 2, I will try calculating numerical summary using `dplyr` and `tidyr` packages for 4 variables **Species, Endemics, Area, Elevation**. To be easier, I will generate a new data frame named **new_gala** that includes these 4 variables only.
 ```{r}
-library(faraway)
 library(dplyr)
 library(tidyr)
 
@@ -98,7 +98,7 @@ new_gala %>% summarise(across(where(is.numeric), .fns =
 ```
 
 ### Graphical Summary
-Histogram of each variable
+Histogram of each variable **Species, Endemics, Area, Elevation**
 ```{r}
 par(mfrow=c(2, 2), mar=c(4,4,4,4))
 hist(new_gala$Species, breaks=30)
@@ -107,7 +107,7 @@ hist(new_gala$Area, breaks=30)
 hist(new_gala$Elevation, breaks=30)
 ```
 
-Box-plot of each variable
+Box-plot of each variable **Species, Endemics, Area, Elevation**
 ```{r}
 par(mfrow=c(2, 2), mar=c(4,4,4,4))
 boxplot(new_gala$Species, main="Species")
@@ -125,5 +125,5 @@ plot(new_gala$Elevation, new_gala$Species)
 ```
 
 ### Comments
-* Histogram and box-plot charts show that distribution of 3 variables **Species, Endemics, Area, Elevation** are skewed, with some high outliers. This suggests that some transformation to another scale (e.g. log scale) may be considered.
-* Scatter plot suggest that number of **Species** tend to increase as **Elevation** and **Endemics** get higher. Same pattern is observed between  **Species** and **Area**; however, this pattern is not as clear as the two pairs above.
+* Histogram and box-plot charts show that distribution of 4 variables **Species, Endemics, Area, Elevation** are skewed, with some high outliers. This suggests that some transformation to another scale (e.g. log scale) may be considered.
+* Scatter plots suggest that number of **Species** tends to increase as **Elevation** and **Endemics** get higher. Same pattern is observed between  **Species** and **Area**; however, this pattern is not as clear as the two pairs above.
