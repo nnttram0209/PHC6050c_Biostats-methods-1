@@ -1,0 +1,136 @@
+---
+title: "Homework_2_NTTNguyen"
+author: "Ngoc Thuy Tram (Tram) Nguyen"
+date: "2024-09-06"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Question 1
+```{r}
+library(faraway)
+head(prostate)
+```
+
+Below is the output after fitting the full model (i.e., **lpsa** as the response and all other variables (lcavol, **lweight**, **svi**, **lbph**, **age**, **lcp**, **pgg45**, and **gleason**) as predictors).
+```{r}
+model_full <- lm(lpsa ~ ., data=prostate)
+model_full_output <- summary(model_full)
+model_full_output
+```
+
+### 1a
+```{r}
+model_full_output$adj.r.squared*100
+```
+Percentage of variation in the response explained by these predictors is calculated as **100%*Adjusted R-squared**, which is 62.34%.
+
+### 1b
+```{r}
+cor_fitted_response <- cor(model_full$fitted.values, prostate$lpsa)
+cor_squared <- cor_fitted_response^2
+cor_squared
+```
+This square of correlation between the fitted values and the response value is the **Multiple R-squared** from the model output.
+
+### 1c
+```{r}
+i <- which.max(model_full$residuals)
+i
+```
+The observation that has the largest residual is case **i=69**.
+
+### 1d
+```{r}
+mean_resid <- mean(model_full$residuals)
+mean_resid
+median_resid <- median(model_full$residuals)
+median_resid
+```
+Mean of the residuals is **mean_resid=-1.766244e-17**.
+Median of the residuals is **median_resid=-0.01700021**.
+
+### 1e
+```{r}
+cor_resid_fitted <- cor(model_full$resid, model_full$fitted.values)
+cor_resid_fitted
+```
+Correlation of the residuals with the fitted values is **cor_resid_fitted=1.235656e-16**.
+
+### 1f
+When all other predictors held constant, the difference in predicted (log) prostate specific antigen for a patient with seminal vesicle invasion (svi=1) compared to a patient without seminal vesicle invasion (svi=0) is the value of coefficient of **svi**, which is **0.766157** from the model output.
+
+
+## Question 2
+From the **fat** dataset I will subset **new_fat**, which only includes the predictors involved in this Question 2.
+```{r}
+head(fat)
+new_fat <- fat[,!(names(fat) %in% c("siri", "density", "adipos", "free"))] 
+new_fat
+```
+
+The `get_rse_rsquare` function below is the one helps to compute the residual standard error and R square of all models, where predictors are added one at a time respectively.
+```{r}
+get_rse_rsquare <- function(x) {
+     rse_rsquare_summary <- data.frame()
+     y <- names(x[1])
+     
+     for (i in 2:ncol(x)) {
+          x_temp <- x[,1:i]
+          formula <- as.formula(paste(y," ~ ."))
+          lmod <- lm(formula, data=x_temp)
+          lmod_rse <- summary(lmod)$sigma
+          lmod_adj_rsquared <- summary(lmod)$adj.r.squared
+          obs <- c(y, paste(names(x_temp[2:i]), collapse=", "), lmod_rse, lmod_adj_rsquared)
+          rse_rsquare_summary <- rbind(rse_rsquare_summary, obs)
+     }
+     
+     colnames(rse_rsquare_summary) <- c("Response", "Predictor(s)", "RSE", "Adjusted_R_squared")
+     print(rse_rsquare_summary)
+}
+```     
+
+Below is the summary of RSE and R-squared of all 13 models
+```{r}
+get_rse_rsquare(new_fat)
+```
+
+### 2a
+Plot of trend between RSE and R-squared
+```{r}
+library(ggplot2)
+ggplot(get_rse_rsquare(new_fat), aes(x=as.numeric(RSE), y=as.numeric(Adjusted_R_squared))) +
+     geom_point() +
+     geom_smooth(method = "lm", se=FALSE) +
+     scale_x_continuous(labels = function(x) sprintf("%.2f", x)) +  # Format x-axis to 2 decimal places
+     scale_y_continuous(labels = function(y) sprintf("%.2f", y)) +
+     labs(x = "RSE", y = "Adjusted R-squared", title = "Trends in RSE vs Adjusted R-squared of all models") +
+     theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"))
+```
+
+### 2b
+Fit the full model with **brozek** as the response
+```{r}
+model_full_2 <- lm(brozek ~ ., data = new_fat)
+summary(model_full_2)
+```
+
+The coefficient of extended biceps circumference (i.e., **biceps** variable) is **0.15280**. This can be interpreted that the increase of 1 unit of extended biceps circumference will lead to a change of +0.15280 unit of body fat percentages (i.e., **brozek** variable) when all other variables are held constant.
+
+### 2c
+Fit the full model with **log (brozek)** as the response
+```{r}
+
+new_fat <- new_fat[new_fat$brozek != 0,]
+new_fat$log_brozek <- log10(new_fat$brozek)
+new_fat <- new_fat[, !names(new_fat) == "brozek"]
+model_full_3 <- lm(log_brozek ~ ., data = new_fat)
+summary(model_full_3)
+```
+--> Errors because brozek has 0 --> log(brozek) in undefined
