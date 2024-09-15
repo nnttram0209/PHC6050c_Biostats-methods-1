@@ -18,7 +18,7 @@ library(faraway)
 head(prostate)
 ```
 
-Below is the output after fitting the full model (i.e., **lpsa** as the response and all other variables (lcavol, **lweight**, **svi**, **lbph**, **age**, **lcp**, **pgg45**, and **gleason**) as predictors).
+Below is the output after fitting the full model (i.e., **lpsa** as the response and all other variables (**lcavol**, **lweight**, **svi**, **lbph**, **age**, **lcp**, **pgg45**, and **gleason**) as predictors).
 ```{r}
 model_full <- lm(lpsa ~ ., data=prostate)
 model_full_output <- summary(model_full)
@@ -58,7 +58,7 @@ Median of the residuals is **median_resid=-0.01700021**.
 
 ### 1e
 ```{r}
-cor_resid_fitted <- cor(model_full$resid, model_full$fitted.values)
+cor_resid_fitted <- cor(model_full$residuals, model_full$fitted.values)
 cor_resid_fitted
 ```
 Correlation of the residuals with the fitted values is **cor_resid_fitted=1.235656e-16**.
@@ -72,7 +72,6 @@ From the **fat** dataset I will subset **new_fat**, which only includes the pred
 ```{r}
 head(fat)
 new_fat <- fat[,!(names(fat) %in% c("siri", "density", "adipos", "free"))] 
-new_fat
 ```
 
 The `get_rse_rsquare` function below is the one helps to compute the residual standard error and R square of all models, where predictors are added one at a time respectively.
@@ -124,13 +123,15 @@ summary(model_full_2)
 The coefficient of extended biceps circumference (i.e., **biceps** variable) is **0.15280**. This can be interpreted that the increase of 1 unit of extended biceps circumference will lead to a change of +0.15280 unit of body fat percentages (i.e., **brozek** variable) when all other variables are held constant.
 
 ### 2c
-Fit the full model with **log (brozek)** as the response
+Firstly I'll remove the observation that has 0 in **brozek** before computing **log(brozek)**.Then I fit the full model with **log (brozek)** as the response.
 ```{r}
-
 new_fat <- new_fat[new_fat$brozek != 0,]
-new_fat$log_brozek <- log10(new_fat$brozek)
+new_fat$log_brozek <- log(new_fat$brozek)
 new_fat <- new_fat[, !names(new_fat) == "brozek"]
 model_full_3 <- lm(log_brozek ~ ., data = new_fat)
 summary(model_full_3)
 ```
---> Errors because brozek has 0 --> log(brozek) in undefined
+
+The coefficient of **biceps** is 0.016819. This can be interpreted that the increase of 1 unit of extended biceps circumference will lead to a change of +0.016819 unit of the log of body fat percentages (i.e., **log_brozek** variable) when all other variables are held constant. 
+
+The previous interpretation seems more natural.
