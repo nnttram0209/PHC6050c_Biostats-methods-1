@@ -1,0 +1,154 @@
+---
+title: "Homework_4_NTTNguyen"
+author: "Ngoc Thuy Tram (Tram) Nguyen"
+date: "2024-09-27"
+output: pdf_document
+---
+
+## Question 1
+
+```{r}
+library(faraway)
+```
+Fit the model
+```{r}
+lmod1 <- lm(Fertility ~ . , data=swiss) 
+summary(lmod1)
+```
+
+### 1a. Check the constant variance assumption for the errors
+Fit residuals against fitted values.
+```{r}
+{plot(fitted(lmod1),residuals(lmod1),xlab="Fitted",ylab="Residuals", main="Residuals vs Fitted")
+abline(h=0)}
+```
+The scatter plot of residuals against fitted values from `lmod1` shows no special pattern. Therefore, the constant variance assumption is met.
+
+### 1b. Check the normality assumption 
+Check the normality assumption using normal Q-Q plot.
+```{r}
+{qqnorm(residuals(lmod1),ylab="Residuals",main="")
+qqline(residuals(lmod1))}
+```
+Q-Q plot shows that all points line closely to the diagonal line. Thus, the residuals are normally distributed and the normality assumption is met.
+
+### 1c. Check for large leverage points
+Check for leverages greater than 2p/n
+```{r}
+hatv1 <- hatvalues(lmod1)
+large_hatv1 <- row.names(swiss)[which(hatv1 > (2*sum(hatv1)/length(hatv1)))] #Detect which Province(s) with hatv >2p/n
+```
+The provinces that have large leverages based on the threshold 2p/n are `r large_hatv1`
+
+### 1d. Check for outliers
+Compute Jackknife residuals for the **swiss** data and try picking out the largest
+```{r}
+JK_resids1 <- rstudent(lmod1)
+JK_resids1[which.max(abs(JK_resids1))]
+qt(0.05/(2*47), 40)  #Compute the Bonferroni critical value
+```
+
+**Sierre** is the observation with the largest residual (2.44). However it is still smaller than the absolute value of Bonferroni critical value, which is `r qt(0.05/(2*47), 40)`, so **Sierre** is not an outlier, which means the **swiss** dataset has no outliers.
+
+
+### 1e. Check for influential observations
+```{r}
+provinces <- row.names(swiss)
+cooks1 <- cooks.distance(lmod1)
+halfnorm(cooks1, 5, labs = provinces)
+abline(h = 4 / nrow(swiss)) #Add suggested threshold 4/n
+```
+The half-norm plot of Cook's distances shows that the provinces **Porrentruy, Sierre, Neuchatel, Rive Droite, Rive Gauche** have Cook's distances that are substantially larger than the rest. Therefore, these provinces might be influential points and require closer attention, such as assessing how the coefficients change in terms of direction and magnitude and how the fitness of model changes if these observations are removed. 
+
+### 1f. Check the structure of the relationship between predictors and response
+Here I will check the structure of the relationship between the response **Fertility** and the predictor **Agriculture** while accounting for the effects of the other predictors (**Examination, Education, Catholic, Infant.Mortality**) in the model.
+
+Get the partial regression plot
+```{r}
+d <- residuals(lm(Fertility ~ Examination + Education + Catholic + Infant.Mortality, swiss))
+m <- residuals(lm(Agriculture ~ Examination + Education + Catholic + Infant.Mortality, swiss))
+plot(m,d,xlab="Agriculture residuals",ylab="Fertility residuals")
+abline(0, coef(lmod1)["Agriculture"])
+```
+
+Get the partial residual plot
+```{r}
+termplot(lmod1, partial.resid=TRUE, terms=1)
+```
+Both plots look normal, suggesting that there's nothing unusual in the relationship between **Agriculture** and **Fertility**.
+
+
+## Question 2
+Fit the model
+```{r}
+lmod2 <- lm(temp ~ year, data=aatemp) 
+summary(lmod2)
+```
+
+### 2a. Check the constant variance assumption for the errors
+Fit residuals against fitted values.
+```{r}
+{plot(fitted(lmod2),residuals(lmod2),xlab="Fitted",ylab="Residuals", main="Residuals vs Fitted")
+abline(h=0)}
+```
+The scatter plot of residuals against fitted values from `lmod2` shows no special pattern. Therefore, the constant variance assumption is met.
+
+### 2b. Check the normality assumption 
+Check the normality assumption using normal Q-Q plot.
+```{r}
+{qqnorm(residuals(lmod2),ylab="Residuals",main="")
+qqline(residuals(lmod2))}
+```
+Q-Q plot shows that all points line closely to the diagonal line. Thus, the residuals are normally distributed and the normality assumption is met.
+
+### 2c. Check for large leverage points
+Check for leverages greater than 2p/n
+```{r}
+hatv2 <- hatvalues(lmod2)
+large_hatv2 <- row.names(aatemp)[which(hatv2 > (2*sum(hatv2)/length(hatv2)))] #Detect which observation(s) with hatv >2p/n
+```
+The observations that have large leverages based on the threshold 2p/n are `r large_hatv2`
+
+### 2d. Check for outliers
+Compute Jackknife residuals for the **aatemp** data and try picking out the largest
+```{r}
+JK_resids2 <- rstudent(lmod2)
+JK_resids2[which.max(abs(JK_resids2))]
+qt(0.05/(2*115), 112)  #Compute the Bonferroni critical value
+```
+
+Observation **36** is the observation with the largest residual (-2.817). However its absolute value is still smaller than the absolute value of Bonferroni critical value, which is `r qt(0.05/(2*115), 112)`, so observation **36** is not an outlier, which means the **aatemp** dataset has no outliers.
+
+### 2e. Check for influential observations
+
+```{r}
+cooks2 <- cooks.distance(lmod2)
+halfnorm(cooks2, 5)
+abline(h = 4 / nrow(aatemp)) #Add suggested threshold 4/n
+```
+The half-norm plot of Cook's distances shows that the observations **8, 113, 1, 36, 6** have Cook's distances that are substantially larger than the rest. Therefore, these observations might be influential points and require closer attention, such as assessing how the coefficients change in terms of direction and magnitude and how the fitness of model changes if they are removed. 
+
+### 2f. Check the structure of the relationship between predictors and response
+In question 2, the model `lmod2` only has one predictor (**year**) so this step can be skipped.
+
+### 2g. Check for serial correlation
+```{r}
+{plot(residuals(lmod2)~ year, na.omit(aatemp))
+abline(h=0)}
+```
+In this plot, there seems a cyclical pattern in the errors but not really clear. To confirm, I also draw the plot of successive pairs and run Durbin-Watson Test.
+
+```{r}
+n <- length(residuals(lmod2))
+e_i1 <- tail(residuals(lmod2),n-1)
+e_i <- head(residuals(lmod2),n-1)
+plot(e_i1 ~ e_i)
+summary(lm(e_i1 ~ e_i))
+```
+There is a slight positive correlation here.
+
+```{r}
+library(lmtest) 
+dwtest(lmod2)
+```
+As p-value is smaller than 0.05, the null hypothesis of no autocorrelation can be rejected. Thus we can conclude that successive errors are correlated. However, as the patterns observed from the plots are not clear and p-value is not too small, the serial correlation is not so strong. Generalized least square method can be used to account for this correlation.
